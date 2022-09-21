@@ -80,7 +80,8 @@ func getAElement(node *html.Node) link.Link {
 	var traverse func(*html.Node)
 	traverse = func(n *html.Node) {
 		if n.Type == html.TextNode {
-			text += n.Data + " "
+			data := strings.TrimSpace(n.Data)
+			text += data + " "
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			traverse(c)
