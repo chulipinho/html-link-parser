@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -74,12 +75,23 @@ func (f *htmlFile) GetLinks() []link.Link {
 }
 
 func getAElement(node *html.Node) link.Link {
-	child := node.FirstChild
+	text := ""
 
-	return parseNode(node, child)
+	var traverse func(*html.Node)
+	traverse = func(n *html.Node) {
+		if n.Type == html.TextNode {
+			text += n.Data + " "
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			traverse(c)
+		}
+	}
+	traverse(node)
+
+	return parseNode(node, text)
 }
 
-func parseNode(hrefNode, textNode *html.Node) link.Link {
+func parseNode(hrefNode *html.Node, text string) link.Link {
 	var href string
 
 	for _, attr := range hrefNode.Attr {
@@ -91,7 +103,7 @@ func parseNode(hrefNode, textNode *html.Node) link.Link {
 
 	a := link.Link{
 		Href: href,
-		Text: textNode.Data,
+		Text: strings.TrimSpace(text),
 	}
 
 	return a
